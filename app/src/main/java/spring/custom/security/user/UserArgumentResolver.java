@@ -6,6 +6,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import spring.custom.security.auth.AuthenticationPrincipal;
 
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 

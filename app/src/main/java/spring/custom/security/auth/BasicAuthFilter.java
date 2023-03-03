@@ -1,4 +1,4 @@
-package spring.custom.security.filter;
+package spring.custom.security.auth;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,10 @@ public class BasicAuthFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.contains("Basic")) {
             try {
                 String token = extractToken(authorization);
+
                 UserDto userDto = decodeToken(token);
+                userDto.addRole(Authority.create("ROLE_USER"));
+
                 request.setAttribute("userDto", userDto);
                 filterChain.doFilter(request, response);
             } catch (Exception e) {
