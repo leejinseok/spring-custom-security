@@ -2,11 +2,12 @@ package spring.custom.security.filter;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.filter.OncePerRequestFilter;
 import spring.custom.security.ErrorResponse;
 import spring.custom.security.user.UserDto;
 
@@ -15,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 
-public class BasicAuthFilter implements Filter {
+public class BasicAuthFilter extends OncePerRequestFilter {
 
     private String extractToken(String header) {
        String[] split = header.split("Basic");
@@ -32,22 +33,19 @@ public class BasicAuthFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException, IOException {
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-
-        String authorization = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorization != null && authorization.contains("Basic")) {
             try {
                 String token = extractToken(authorization);
                 UserDto userDto = decodeToken(token);
                 request.setAttribute("userDto", userDto);
-                chain.doFilter(request, response);
+                filterChain.doFilter(request, response);
             } catch (Exception e) {
-                setErrorResponse(httpServletResponse, 401, "올바르지 않은 토큰입니다.");
+                setErrorResponse(response, 401, "올바르지 않은 토큰입니다.");
             }
         } else {
-            setErrorResponse(httpServletResponse, 401, "토큰이 존재하지 않습니다");
+            setErrorResponse(response, 401, "토큰이 존재하지 않습니다");
         }
     }
 
